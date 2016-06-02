@@ -6,6 +6,8 @@ Thin wrapper around speedtest-cli to average a few results
 import subprocess
 import argparse
 from datetime import datetime
+import os
+import os.path
 
 
 def get_speed(lines, word):
@@ -20,10 +22,17 @@ def avg(l):
     return sum(l) / len(l)
 
 
-def main(server=1773, runs=3, drop_outliers=False):
+def main(server=1773, runs=3, drop_outliers=False, outfile=None):
     speeds = {'Download': [], 'Upload': []}
+
+    curdir = os.path.abspath(os.path.dirname(__file__))
+    venv = os.path.join(curdir, 'venv/bin')
+    if os.path.isdir(venv):
+        speedtest = os.path.join(venv, 'speedtest-cli')
+    else:
+        speedtest = 'speedtest-cli'
     for _ in range(runs):
-        cmd = subprocess.run(['speedtest-cli', '--server', str(server)],
+        cmd = subprocess.run([speedtest, '--server', str(server)],
                              stdout=subprocess.PIPE, universal_newlines=True)
         raw_output = cmd.stdout
         lines = raw_output.splitlines()
@@ -32,8 +41,9 @@ def main(server=1773, runs=3, drop_outliers=False):
             speed = get_speed(lines, updown + ":")
             speeds[updown].append(speed)
 
-    print("Test started at {}".format(datetime.now()))
-    print("Averaging results over {} runs".format(runs))
+    dt = datetime.now()
+    output = ("Test started at {}\n"
+              "Averaging results over {} runs\n".format(dt, runs))
     for updown in speeds.keys():
         if drop_outliers and len(speeds[updown]) > 4:
             trimmed_speeds = sorted(speeds[updown])[1:-1]
@@ -41,8 +51,21 @@ def main(server=1773, runs=3, drop_outliers=False):
         else:
             trimmed_speeds = speeds[updown]
             trimmed_msg = ""
-        print("{} average{}: {:.02f}\n".format(updown, trimmed_msg,
-                                               avg(trimmed_speeds)))
+        output += ("{} average{}: {:.02f}\n".format(updown, trimmed_msg,
+                                                    avg(trimmed_speeds)))
+    if outfile is None:
+        print(output)
+    else:
+        with open(outfile, 'a') as f:
+            f.write("{0:%Y-%m-%d %H:%M},{1:.02f},{2:.02f},{3:.02f},{4:.02f},"
+                    "{5},{6}".format(
+                        dt,
+                        avg(speeds["Download"]),
+                        avg(sorted(speeds["Download"])[1:-1]),
+                        avg(speeds["Upload"]),
+                        avg(sorted(speeds["Upload"])[1:-1]),
+                        runs,
+                        bool(drop_outliers)))
 
 
 def _cli():
@@ -51,6 +74,8 @@ def _cli():
     parser.add_argument('-r', '--runs', type=int, help="Number of runs")
     parser.add_argument('--drop-outliers', action='store_true',
                         help="If runs >= 5, drop the highest and lowest")
+    parser.add_argument('-o', '--outfile',
+                        help="Append output to file instead of stdout")
     args = parser.parse_args()
     return vars(args)
 
