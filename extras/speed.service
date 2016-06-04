@@ -1,0 +1,9 @@
+# /etc/systemd/system/speed.service
+[Unit]
+Description=speed.py
+
+[Service]
+Type=simple
+User=Me
+WorkingDirectory=/path/to/speed
+ExecStart=/path/to/speed/venv/bin/python speed.py --runs=5 --drop-outliers -o speed.csv

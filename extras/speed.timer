@@ -1,0 +1,10 @@
+# /etc/systemd/system/speed.timer 
+[Unit]
+Description=speed.py
+
+[Timer]
+OnBootSec=5min
+OnCalendar=hourly
+
+[Install]
+WantedBy=timers.target
