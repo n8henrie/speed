@@ -58,7 +58,7 @@ def main(server=1773, runs=3, drop_outliers=False, outfile=None):
     else:
         with open(outfile, 'a') as f:
             f.write("{0:%Y-%m-%d %H:%M},{1:.02f},{2:.02f},{3:.02f},{4:.02f},"
-                    "{5},{6}".format(
+                    "{5},{6}\n".format(
                         dt,
                         avg(speeds["Download"]),
                         avg(sorted(speeds["Download"])[1:-1]),
