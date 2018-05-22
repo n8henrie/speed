@@ -3,11 +3,12 @@
 Thin wrapper around speedtest-cli to average a few results
 """
 
-import subprocess
 import argparse
-from datetime import datetime
 import os
-import os.path
+import pathlib
+import subprocess
+import sys
+from datetime import datetime
 
 
 def get_speed(lines, word):
@@ -25,11 +26,8 @@ def avg(l):
 def main(server=1773, runs=3, drop_outliers=False, outfile=None):
     speeds = {'Download': [], 'Upload': []}
 
-    curdir = os.path.abspath(os.path.dirname(__file__))
-    venv = os.path.join(curdir, 'venv/bin')
-    if os.path.isdir(venv):
-        speedtest = os.path.join(venv, 'speedtest-cli')
-    else:
+    speedtest = pathlib.Path(sys.prefix) / 'bin' / 'speedtest-cli'
+    if not speedtest.is_file():
         speedtest = 'speedtest-cli'
     for _ in range(runs):
         cmd = subprocess.run([speedtest, '--server', str(server)],
