@@ -23,7 +23,7 @@ def avg(l):
     return sum(l) / len(l)
 
 
-def main(server=1773, runs=3, drop_outliers=False, outfile=None):
+def main(server=30568, runs=3, drop_outliers=False, outfile=None):
     speeds = {"Download": [], "Upload": []}
 
     speedtest = pathlib.Path(sys.prefix) / "bin" / "speedtest-cli"
