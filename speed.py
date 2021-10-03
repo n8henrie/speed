@@ -10,6 +10,7 @@ import subprocess
 import sys
 from datetime import datetime
 
+from speedtest import Speedtest
 
 def get_speed(lines, word):
     """Return a float of the speed based on first word"""
@@ -23,7 +24,8 @@ def avg(l):
     return sum(l) / len(l)
 
 
-def main(server=30568, runs=3, drop_outliers=False, outfile=None):
+def main(runs=3, drop_outliers=False, outfile=None):
+    server = Speedtest().get_best_server()["id"]
     speeds = {"Download": [], "Upload": []}
 
     speedtest = pathlib.Path(sys.prefix) / "bin" / "speedtest-cli"
